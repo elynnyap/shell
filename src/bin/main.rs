@@ -28,7 +28,7 @@ impl <'a>Shell<'a> {
     fn new(prompt_str: &'a str) -> Shell<'a> {
         Shell { 
             cmd_prompt: prompt_str, 
-            history: CircularBuffer::new(10)
+            history: CircularBuffer::new()
         }
     }
 
@@ -47,7 +47,7 @@ impl <'a>Shell<'a> {
             let program = cmd_line.splitn(1, ' ').nth(0).expect("no program");
 
             // record the newly-entered command in the history
-            self.history.push(String::from(cmd_line));
+            self.history.write(String::from(cmd_line));
 
             match program {
                 ""      =>  { continue; }
@@ -60,11 +60,7 @@ impl <'a>Shell<'a> {
 
     // Iterate through the 10 most recently entered commands and print them out
     fn print_history(&self) {
-        let history_iter = (*self).history.iter();
-
-        for cmd in history_iter {
-            println!("{}", cmd);
-        }
+       self.history.print_all(); 
     }
     
 
