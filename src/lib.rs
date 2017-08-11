@@ -8,6 +8,7 @@ pub struct CircularBuffer {
     buffer_length: i32
 }
 
+#[allow(dead_code)]
 impl CircularBuffer {
 
     pub fn new() -> CircularBuffer {
@@ -29,8 +30,6 @@ impl CircularBuffer {
         self.front = 0;
         self.back = 0;
         self.buffer_length = 0;
-
-        /* Free the elements here? */
     }
 
     /* Checks if the buffer is empty */
@@ -55,12 +54,9 @@ impl CircularBuffer {
         self.elements[self.back as usize] = elem;
     }
 
+    /* Effectively deletes the oldest element in the buffer */
     fn delete(&mut self) {
         if !self.is_empty() {
-            // Assign the first elem to a var so it will be deallocated at the end of this scope
-            // (?)
-            //let removed_elem = self.elements[self.front as usize];
-
             self.buffer_length = self.buffer_length - 1;
             self.front = (self.front + 1) % BUFFER_SIZE as i32;
         }

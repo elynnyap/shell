@@ -1,9 +1,9 @@
 //
 // gash.rs
+// 
+// A simple shell for unix commands
 //
-// Starting code for PS2
-// Running on Rust 1+
-//
+// Starting code credited to:
 // University of Virginia - cs4414 Spring 2014
 // Weilin Xu, David Evans
 // Version 0.4
@@ -14,14 +14,15 @@ extern crate getopts; // Rust library for parsing CLI options
 // https://doc.rust-lang.org/getopts/getopts/index.html
 
 use shell::CircularBuffer;
+use std::path::Path;
 use getopts::Options;
 use std::env;
 use std::io::{self, Write};
 use std::process::Command;
 
 struct Shell<'a> {
-    cmd_prompt: &'a str,
-    history: CircularBuffer,
+    cmd_prompt: &'a str, // `gash` by default
+    history: CircularBuffer, // stores the 10 most recently entered cmds
 }
 
 impl <'a>Shell<'a> {
@@ -74,9 +75,32 @@ impl <'a>Shell<'a> {
         }).collect();
 
         match argv.first() {
-            Some(&program) => self.run_cmd(program, &argv[1..]),
             None => (),
+            Some(&program) => {
+                match program {
+                    "cd" => {
+                        if argv.len() == 1 {
+                            println!("No directory specified.");
+                        } else {
+                            self.run_cd(&argv[1]);
+                        }
+                    },
+                    _ => self.run_cmd(program, &argv[1..]),
+                }
+            }
         };
+    }
+
+    /* Change directory */
+    fn run_cd(&self, new_dir: &str) {
+        let path = Path::new(new_dir);
+        if path.exists() {
+            if env::set_current_dir(&path).is_err() {
+                println!("Unable to change directory");
+            }
+        } else {
+            println!("Path does not exist");
+        }
     }
 
     fn run_cmd(&self, program: &str, argv: &[&str]) {
