@@ -13,7 +13,8 @@ extern crate shell;
 extern crate getopts; // Rust library for parsing CLI options
 // https://doc.rust-lang.org/getopts/getopts/index.html
 
-use shell::CircularBuffer;
+use shell::circular_buffer;
+use shell::args_parser;
 use std::path::Path;
 use getopts::Options;
 use std::env;
@@ -22,14 +23,14 @@ use std::process::Command;
 
 struct Shell<'a> {
     cmd_prompt: &'a str, // `gash` by default
-    history: CircularBuffer, // stores the 10 most recently entered cmds
+    history: circular_buffer::CircularBuffer, // stores the 10 most recently entered cmds
 }
 
 impl <'a>Shell<'a> {
     fn new(prompt_str: &'a str) -> Shell<'a> {
         Shell { 
             cmd_prompt: prompt_str, 
-            history: CircularBuffer::new()
+            history: circular_buffer::CircularBuffer::new()
         }
     }
 
@@ -104,6 +105,10 @@ impl <'a>Shell<'a> {
     }
 
     fn run_cmd(&self, program: &str, argv: &[&str]) {
+        if args_parser::is_background_process(argv) {
+            println!("run in bg");
+        }
+
         if self.cmd_exists(program) {
             io::stdout().write(&Command::new(program).args(argv).output().unwrap().stdout).unwrap();
         } else {

@@ -6,3 +6,7 @@ authors = ["E-Lynn Yap"]
 
 [dependencies]
 getopts = "*"
+clippy = {version = "*", optional = true}
+
+[features]
+default = []
