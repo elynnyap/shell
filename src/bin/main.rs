@@ -7,18 +7,16 @@
 // University of Virginia - cs4414 Spring 2014
 // Weilin Xu, David Evans
 // Version 0.4
-//
 
-extern crate shell;
 extern crate getopts; // Rust library for parsing CLI options
-// https://doc.rust-lang.org/getopts/getopts/index.html
+extern crate shell;
 
+use getopts::Options;
 use shell::circular_buffer;
 use shell::args_parser;
-use std::path::Path;
-use getopts::Options;
 use std::env;
 use std::io::{self, Write};
+use std::path::Path;
 use std::process::Command;
 
 struct Shell<'a> {
