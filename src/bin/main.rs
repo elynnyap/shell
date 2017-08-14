@@ -110,7 +110,10 @@ impl <'a>Shell<'a> {
         }
 
         if self.cmd_exists(program) {
-            io::stdout().write(&Command::new(program).args(argv).output().unwrap().stdout).unwrap();
+            let output = Command::new(program).args(argv).output().unwrap();
+ 
+            io::stdout().write(&output.stdout).unwrap();
+            io::stdout().write(&output.stderr).unwrap();
         } else {
             println!("{}: command not found", program);
         }
