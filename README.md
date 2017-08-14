@@ -1,6 +1,18 @@
-ps2
-===
+Rust Shell
+==========
 
-[![Build Status](https://travis-ci.org/cs4414/ps2.svg?branch=master)](https://travis-ci.org/cs4414/ps2)
+A simple shell for Unix-based systems.
 
-Starting code for Problem Set 2 of CS4414.
+Features:
+* cd
+* history (last 10 commands)
+* signal handling for ctrl+c
+
+In progress:
+* i/o redirection
+* pipes
+* background processes
+
+## Credits
+* [David Evans' Rust Class](http://www.rust-class.org/pages/ps2.html)
+* [Linux Signals](http://www.thegeekstuff.com/2012/03/catch-signals-sample-c-code/)
