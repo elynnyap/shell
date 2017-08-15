@@ -120,6 +120,7 @@ impl <'a>Shell<'a> {
         } else {
             println!("{}: command not found", program);
         }
+        println!("Command complete");
     }
 
     fn cmd_exists(&self, cmd_path: &str) -> bool {
