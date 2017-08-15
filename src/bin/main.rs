@@ -8,13 +8,18 @@
 // Weilin Xu, David Evans
 // Version 0.4
 
+#[macro_use]
+extern crate chan;
+extern crate chan_signal;
 extern crate getopts; // Rust library for parsing CLI options
 extern crate shell;
 
+use chan_signal::Signal;
 use getopts::Options;
 use shell::circular_buffer;
 use shell::args_parser;
 use std::env;
+use std::thread;
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
@@ -133,10 +138,19 @@ fn get_cmdline_from_args() -> Option<String> {
 }
 
 fn main() {
+
+    let signal = chan_signal::notify(&[Signal::INT]);
+
     let opt_cmd_line = get_cmdline_from_args();
 
-    match opt_cmd_line {
-        Some(cmd_line) => Shell::new("").run_cmdline(&cmd_line),
-        None           => Shell::new("gash > ").run(),
-    }
+    thread::spawn(move ||
+        match opt_cmd_line {
+            Some(cmd_line) => Shell::new("").run_cmdline(&cmd_line),
+            None           => Shell::new("gash > ").run(),
+        }
+    );
+
+    signal.recv().unwrap();
+
+    println!("signal received");
 }

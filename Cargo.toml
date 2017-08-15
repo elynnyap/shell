@@ -7,6 +7,8 @@ authors = ["E-Lynn Yap"]
 [dependencies]
 getopts = "*"
 clippy = {version = "*", optional = true}
+chan = "0.1.19" 
+chan-signal = "0.3.0"
 
 [features]
 default = []
