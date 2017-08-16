@@ -10,14 +10,23 @@
 
 extern crate getopts; // Rust library for parsing CLI options
 extern crate shell;
+extern crate nix;
 
+use nix::sys::signal::{sigaction, kill, Signal, SigHandler};
+use nix::libc::c_int;
+use nix::sys::signal;
 use getopts::Options;
+use std::ffi::CString;
 use shell::circular_buffer;
 use shell::args_parser;
+use nix::unistd::{fork, ForkResult, execvp, Pid};
+use nix::sys::wait::waitpid;
 use std::env;
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
+
+static mut FG_PID: Option<Pid> = None;
 
 struct Shell<'a> {
     cmd_prompt: &'a str, // `gash` by default
@@ -42,7 +51,7 @@ impl <'a>Shell<'a> {
 
             let mut line = String::new();
 
-            stdin.read_line(&mut line).unwrap();
+            while stdin.read_line(&mut line).is_err() {};
             let cmd_line = line.trim();
             let program = cmd_line.splitn(1, ' ').nth(0).expect("no program");
 
@@ -84,7 +93,7 @@ impl <'a>Shell<'a> {
                             self.run_cd(&argv[1]);
                         }
                     },
-                    _ => self.run_cmd(program, &argv[1..]),
+                    _ => self.run_cmd(program, &argv),
                 }
             }
         };
@@ -108,10 +117,23 @@ impl <'a>Shell<'a> {
         }
 
         if self.cmd_exists(program) {
-            let output = Command::new(program).args(argv).output().unwrap();
- 
-            io::stdout().write(&output.stdout).unwrap();
-            io::stdout().write(&output.stderr).unwrap();
+            match fork() {
+                Ok(ForkResult::Parent { child, .. }) => {
+                    unsafe {
+                        FG_PID = Some(child);
+                    }
+                    waitpid(child, None);
+                    println!("child completed");
+                },
+                Ok(ForkResult::Child) => {
+                    let argv_cstring: Vec<CString> = argv.into_iter().map( |slice| CString::new(*slice).unwrap()).collect();
+                    execvp(&CString::new(program).unwrap(), &argv_cstring);
+                    println!("execvp done");
+                },
+                Err(_) => {
+                    println!("Fork failed");
+                }
+            }
         } else {
             println!("{}: command not found", program);
         }
@@ -132,7 +154,26 @@ fn get_cmdline_from_args() -> Option<String> {
     opts.parse(&args[1..]).unwrap().opt_str("c")
 }
 
+extern "C" fn handle_sigint(signal_num: c_int) {
+    println!("signal handler called");
+    unsafe {
+        match FG_PID {
+            None => {}, // FIX
+            Some(pid) => { kill(pid, Signal::from_c_int(signal_num).ok()); }
+        };
+    }
+}
+
 fn main() {
+    let mut mask = signal::SigSet::empty();
+    mask.add(signal::SIGSTOP);
+    let sig_action = signal::SigAction::new(SigHandler::Handler(handle_sigint),
+                                          signal::SaFlags::empty(),
+                                          mask);
+    unsafe {
+        signal::sigaction(signal::SIGINT, &sig_action);
+    }
+
     let opt_cmd_line = get_cmdline_from_args();
 
     match opt_cmd_line {
