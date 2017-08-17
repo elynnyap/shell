@@ -12,15 +12,14 @@ extern crate getopts; // Rust library for parsing CLI options
 extern crate shell;
 extern crate nix;
 
-use nix::sys::signal::{sigaction, kill, Signal, SigHandler};
-use nix::libc::c_int;
-use nix::sys::signal;
-use getopts::Options;
 use std::ffi::CString;
 use shell::circular_buffer;
 use shell::args_parser;
 use nix::unistd::{fork, ForkResult, execvp, Pid};
 use nix::sys::wait::waitpid;
+use nix::sys::signal::{kill, Signal, SigHandler};
+use nix::libc::c_int;
+use nix::sys::signal;
 use std::env;
 use std::io::{self, Write};
 use std::path::Path;
@@ -33,6 +32,7 @@ struct Shell<'a> {
     history: circular_buffer::CircularBuffer, // stores the 10 most recently entered cmds
 }
 
+#[allow(unused_must_use)]
 impl <'a>Shell<'a> {
     fn new(prompt_str: &'a str) -> Shell<'a> {
         Shell { 
@@ -51,7 +51,8 @@ impl <'a>Shell<'a> {
 
             let mut line = String::new();
 
-            while stdin.read_line(&mut line).is_err() {};
+            stdin.read_line(&mut line).unwrap(); 
+
             let cmd_line = line.trim();
             let program = cmd_line.splitn(1, ' ').nth(0).expect("no program");
 
@@ -119,16 +120,20 @@ impl <'a>Shell<'a> {
         if self.cmd_exists(program) {
             match fork() {
                 Ok(ForkResult::Parent { child, .. }) => {
+                    // Record child process as the currently-running foreground process
                     unsafe {
                         FG_PID = Some(child);
                     }
                     waitpid(child, None);
-                    println!("child completed");
+
+                    // child process has completed, so clear FG_PID
+                    unsafe {
+                        FG_PID = None;
+                    }
                 },
                 Ok(ForkResult::Child) => {
                     let argv_cstring: Vec<CString> = argv.into_iter().map( |slice| CString::new(*slice).unwrap()).collect();
                     execvp(&CString::new(program).unwrap(), &argv_cstring);
-                    println!("execvp done");
                 },
                 Err(_) => {
                     println!("Fork failed");
@@ -144,40 +149,26 @@ impl <'a>Shell<'a> {
     }
 }
 
-fn get_cmdline_from_args() -> Option<String> {
-    /* Begin processing program arguments and initiate the parameters. */
-    let args: Vec<_> = env::args().collect();
-
-    let mut opts = Options::new();
-    opts.optopt("c", "", "", "");
-
-    opts.parse(&args[1..]).unwrap().opt_str("c")
-}
-
+#[allow(unused_must_use)]
 extern "C" fn handle_sigint(signal_num: c_int) {
-    println!("signal handler called");
     unsafe {
         match FG_PID {
-            None => {}, // FIX
-            Some(pid) => { kill(pid, Signal::from_c_int(signal_num).ok()); }
+            None => {}, 
+            Some(pid) => { 
+                kill(pid, Signal::from_c_int(signal_num).ok()); 
+            }
         };
     }
 }
 
+#[allow(unused_must_use)]
 fn main() {
-    let mut mask = signal::SigSet::empty();
-    mask.add(signal::SIGSTOP);
     let sig_action = signal::SigAction::new(SigHandler::Handler(handle_sigint),
                                           signal::SaFlags::empty(),
-                                          mask);
+                                          signal::SigSet::empty());
     unsafe {
         signal::sigaction(signal::SIGINT, &sig_action);
     }
 
-    let opt_cmd_line = get_cmdline_from_args();
-
-    match opt_cmd_line {
-        Some(cmd_line) => Shell::new("").run_cmdline(&cmd_line),
-        None           => Shell::new("gash > ").run(),
-    }
+    Shell::new("gash > ").run();
 }
