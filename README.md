@@ -11,11 +11,11 @@ Features:
 * cd
 * history (last 10 commands)
 * signal handling for ctrl+c
+* background processes
 
 In progress:
 * i/o redirection
 * pipes
-* background processes
 
 ## Credits
 * [David Evans' Rust Class](http://www.rust-class.org/pages/ps2.html)
