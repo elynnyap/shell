@@ -12,9 +12,9 @@ Features:
 * history (last 10 commands)
 * signal handling for ctrl+c
 * background processes
+* i/o redirection
 
 In progress:
-* i/o redirection
 * pipes
 
 ## Credits
