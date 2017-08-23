@@ -1,8 +1,14 @@
-pub fn is_background_process<'a>(argv: &'a [&str]) -> bool {
+//Checks if process should be executed in the background and returns the (un)modified cmd + boolean as result
+pub fn check_background_process<'a>(argv: &'a [&str]) -> (&'a [&'a str], bool) {
     if argv.len() == 0 {
-        false 
+        (argv, false) 
     } else {
-        argv[argv.len() - 1] == "&"
+        let last_idx = argv.len() - 1;
+        if argv[last_idx] == "&" {
+            (&argv[0..last_idx], true)
+        } else {
+            (argv, false)
+        }
     }
 }
 

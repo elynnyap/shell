@@ -15,7 +15,7 @@ extern crate nix;
 use std::ffi::CString;
 use shell::circular_buffer;
 use shell::args_parser;
-use nix::unistd::{fork, ForkResult, execvp, Pid};
+use nix::unistd::{fork, ForkResult, execvp, Pid, setpgid};
 use nix::sys::wait::waitpid;
 use nix::sys::signal::{kill, Signal, SigHandler};
 use nix::libc::c_int;
@@ -113,30 +113,43 @@ impl <'a>Shell<'a> {
     }
 
     fn run_cmd(&self, program: &str, argv: &[&str]) {
-        if args_parser::is_background_process(argv) {
-            println!("run in bg");
-        }
+        let (argv, is_bg_process) = args_parser::check_background_process(argv);
 
         if self.cmd_exists(program) {
-            match fork() {
-                Ok(ForkResult::Parent { child, .. }) => {
-                    // Record child process as the currently-running foreground process
-                    unsafe {
-                        FG_PID = Some(child);
+            if is_bg_process {
+                match fork() {
+                    Ok(ForkResult::Parent { child, ..}) => {}, // Parent does not wait for bg process
+                    Ok(ForkResult::Child) => {
+                        setpgid(Pid::from_raw(0), Pid::from_raw(0)); // Put the child into a different process group
+                        let argv_cstring: Vec<CString> = argv.into_iter().map( |slice| CString::new(*slice).unwrap()).collect();
+                        execvp(&CString::new(program).unwrap(), &argv_cstring);
+                    },
+                    Err(_) => {
+                        println!("Fork failed");
                     }
-                    waitpid(child, None);
+                }
 
-                    // child process has completed, so clear FG_PID
-                    unsafe {
-                        FG_PID = None;
+            } else {
+                match fork() {
+                    Ok(ForkResult::Parent { child, .. }) => {
+                        // Record child process as the currently-running foreground process
+                        unsafe {
+                            FG_PID = Some(child);
+                        }
+                        waitpid(child, None);
+
+                        // child process has completed, so clear FG_PID
+                        unsafe {
+                            FG_PID = None;
+                        }
+                    },
+                    Ok(ForkResult::Child) => {
+                        let argv_cstring: Vec<CString> = argv.into_iter().map( |slice| CString::new(*slice).unwrap()).collect();
+                        execvp(&CString::new(program).unwrap(), &argv_cstring);
+                    },
+                    Err(_) => {
+                        println!("Fork failed");
                     }
-                },
-                Ok(ForkResult::Child) => {
-                    let argv_cstring: Vec<CString> = argv.into_iter().map( |slice| CString::new(*slice).unwrap()).collect();
-                    execvp(&CString::new(program).unwrap(), &argv_cstring);
-                },
-                Err(_) => {
-                    println!("Fork failed");
                 }
             }
         } else {
