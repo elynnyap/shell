@@ -13,7 +13,7 @@ extern crate shell;
 extern crate nix;
 
 use std::ffi::CString;
-use shell::circular_buffer;
+use shell::circular_buffer::CircularBuffer;
 use shell::args_parser;
 use nix::unistd::{fork, ForkResult, execvp, Pid, setpgid, dup2, close};
 use nix::sys::wait::waitpid;
@@ -28,12 +28,13 @@ use std::fs::File;
 use std::os::unix::io::{RawFd, IntoRawFd};
 
 static mut FG_PID: Option<Pid> = None;
+const HISTORY_SIZE: usize = 10;
 const STDIN_FILENO: RawFd = 0;
 const STDOUT_FILENO: RawFd = 1;
 
 struct Shell<'a> {
     cmd_prompt: &'a str, // `gash` by default
-    history: circular_buffer::CircularBuffer, // stores the 10 most recently entered cmds
+    history: CircularBuffer<String>, // stores the 10 most recently entered cmds
 }
 
 #[allow(unused_must_use)]
@@ -41,7 +42,7 @@ impl <'a>Shell<'a> {
     fn new(prompt_str: &'a str) -> Shell<'a> {
         Shell { 
             cmd_prompt: prompt_str, 
-            history: circular_buffer::CircularBuffer::new()
+            history: CircularBuffer::new(HISTORY_SIZE)
         }
     }
 
