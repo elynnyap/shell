@@ -1,40 +1,35 @@
-//
-// gash.rs
-// 
-// A simple shell for unix commands
-//
 // Starting code credited to:
 // University of Virginia - cs4414 Spring 2014
 // Weilin Xu, David Evans
 // Version 0.4
 
-extern crate getopts; // Rust library for parsing CLI options
 extern crate shell;
 extern crate nix;
 
-use std::ffi::CString;
-use shell::circular_buffer::CircularBuffer;
-use shell::args_parser;
-use nix::unistd::{fork, ForkResult, execvp, Pid, setpgid, dup2, close};
-use nix::sys::wait::waitpid;
-use nix::sys::signal::{kill, Signal, SigHandler};
 use nix::libc::c_int;
+use nix::sys::signal::{kill, Signal, SigHandler};
 use nix::sys::signal;
+use nix::sys::wait::waitpid;
+use nix::unistd::{fork, ForkResult, execvp, Pid, setpgid, dup2, close};
+use shell::args_parser;
+use shell::circular_buffer::CircularBuffer;
 use std::env;
+use std::ffi::CString;
+use std::fs::File;
 use std::io::{self, Write};
+use std::os::unix::io::{RawFd, IntoRawFd};
 use std::path::Path;
 use std::process::Command;
-use std::fs::File;
-use std::os::unix::io::{RawFd, IntoRawFd};
 
 static mut FG_PID: Option<Pid> = None;
+
 const HISTORY_SIZE: usize = 10;
 const STDIN_FILENO: RawFd = 0;
 const STDOUT_FILENO: RawFd = 1;
 
 struct Shell<'a> {
-    cmd_prompt: &'a str, // `gash` by default
-    history: CircularBuffer<String>, // stores the 10 most recently entered cmds
+    cmd_prompt: &'a str, 
+    history: CircularBuffer<String> 
 }
 
 #[allow(unused_must_use)]
@@ -61,7 +56,6 @@ impl <'a>Shell<'a> {
             let cmd_line = line.trim();
             let program = cmd_line.splitn(1, ' ').nth(0).expect("no program");
 
-            // record the newly-entered command in the history
             self.history.write(String::from(cmd_line));
 
             match program {
@@ -73,11 +67,9 @@ impl <'a>Shell<'a> {
         }
     }
 
-    // Iterate through the 10 most recently entered commands and print them out
     fn print_history(&self) {
        self.history.print_all(); 
     }
-    
 
     fn run_cmdline(&self, cmd_line: &str) {
         let argv: Vec<&str> = cmd_line.split(' ').filter_map(|x| {
@@ -167,24 +159,24 @@ impl <'a>Shell<'a> {
         match redirect_in {
             None => {},
             Some(input) => {
-                let fd = File::open(input).unwrap().into_raw_fd(); // open input file
+                let fd = File::open(input).unwrap().into_raw_fd(); 
                 match dup2(fd, STDIN_FILENO) { // replace stdin with input file
                     Ok(_) => {},
                     Err(e) => println!("Error occurred during redirection. {:?}", e)
                 }
-                close(fd); // close unused file descriptor
+                close(fd); 
             }
         };
 
         match redirect_out {
             None => {},
             Some(output) => {
-                let fd = File::create(output).unwrap().into_raw_fd(); // open output file
+                let fd = File::create(output).unwrap().into_raw_fd(); 
                 match dup2(fd, STDOUT_FILENO) { // replace stdout with output file
                     Ok(_) => {},
                     Err(e) => println!("Error occurred during redirection. {:?}", e)
                 }
-                close(fd); // close unused file descriptor
+                close(fd); 
             }
         };
 
