@@ -51,16 +51,42 @@ impl <'a>Shell<'a> {
 
             let mut line = String::new();
 
+            stdin.read_line(&mut line).unwrap();
+            
+            line = line.trim().to_lowercase(); 
+
+            if line == "i solemnly swear that i am up to no good" { break; }
+        }
+
+        let welcome_msg = "
+        ****************************************************
+        Messrs Moony, Wormtail, Padfoot and Prongs \n
+        Purveyors of Aids to Magical Mischief-Makers \n
+        are proud to present...\n
+        ****************************************************
+        \n"; 
+
+        stdout.write(welcome_msg.as_bytes()).unwrap();
+        stdout.flush().unwrap();
+
+        loop {
+            stdout.write(self.cmd_prompt.as_bytes()).unwrap();
+            stdout.flush().unwrap();
+
+            let mut line = String::new();
+
             stdin.read_line(&mut line).unwrap(); 
 
             let cmd_line = line.trim();
+
+            if cmd_line.to_lowercase() == "mischief managed" { return; }
+
             let program = cmd_line.splitn(1, ' ').nth(0).expect("no program");
 
             self.history.write(String::from(cmd_line));
 
             match program {
                 ""      =>  { continue; }
-                "exit"  =>  { return; }
                 "history" => { self.print_history(); }
                 _       =>  { self.run_cmdline(cmd_line); }
             }
