@@ -204,5 +204,5 @@ fn main() {
         signal::sigaction(signal::SIGINT, &sig_action);
     }
 
-    Shell::new("gash > ").run();
+    Shell::new("swish > ").run();
 }
