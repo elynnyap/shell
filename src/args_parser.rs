@@ -1,35 +1,27 @@
 //Checks if process should be executed in the background and returns the (un)modified cmd + boolean as result
 pub fn check_background_process<'a>(argv: &'a [&str]) -> (&'a [&'a str], bool) {
-    if argv.len() == 0 {
-        (argv, false) 
+    let last_index = argv.len() - 1;
+    if argv.len() > 0 && argv[last_index] == "&" {
+        (&argv[0..last_index], true)
     } else {
-        let last_idx = argv.len() - 1;
-        if argv[last_idx] == "&" {
-            (&argv[0..last_idx], true)
-        } else {
-            (argv, false)
-        }
+        (argv, false)
     }
 }
 
 fn check_redirect<'a>(is_in: bool, argv: &'a [&str]) -> (Option<&'a str>, &'a [&'a str]) {
     let mut sym = ">";
-    if is_in {
-        sym = "<";
-    }
+    if is_in { sym = "<"; }
 
-    let mut found_redirect = false;
     let mut idx = 0;
 
     for i in 0..argv.len() {
         if argv[i] == sym {
-            found_redirect = true;
             idx = i;
             break;
         }
     }
 
-    if found_redirect {
+    if idx != 0 {
         (Some(argv[idx+1]), &argv[0..idx])
     } else {
         (None, argv)
