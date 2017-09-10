@@ -153,26 +153,20 @@ impl <'a>Shell<'a> {
     }
 
     fn run_cmd_child(&self, program: &str, argv: &[&str]) {
-        let (redirect_in, argv) = args_parser::check_redirect_in(argv);
-        let (redirect_out, argv) = args_parser::check_redirect_out(argv);
+        let (redirect, argv) = args_parser::check_redirect(argv);
 
-        match redirect_in {
+        match redirect {
             None => {},
-            Some(input) => {
-                let fd = File::open(input).unwrap().into_raw_fd(); 
-                match dup2(fd, STDIN_FILENO) { // replace stdin with input file
-                    Ok(_) => {},
-                    Err(e) => println!("Error occurred during redirection. {:?}", e)
-                }
-                close(fd); 
-            }
-        };
+            Some((src, is_redirect_in)) => {
+                let fd = if is_redirect_in {
+                    File::open(src).unwrap().into_raw_fd() 
+                } else {
+                    File::create(src).unwrap().into_raw_fd()
+                };
+                
+                let dest = if is_redirect_in { STDIN_FILENO } else { STDOUT_FILENO };
 
-        match redirect_out {
-            None => {},
-            Some(output) => {
-                let fd = File::create(output).unwrap().into_raw_fd(); 
-                match dup2(fd, STDOUT_FILENO) { // replace stdout with output file
+                match dup2(fd, dest) { 
                     Ok(_) => {},
                     Err(e) => println!("Error occurred during redirection. {:?}", e)
                 }
