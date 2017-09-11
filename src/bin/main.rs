@@ -79,7 +79,7 @@ impl <'a>Shell<'a> {
             self.history.write(String::from(cmd_line));
             
             if cmd_line.to_lowercase() == "mischief managed" { return; }
-            if cmd_line.to_lowercase() == "priori incantato" { 
+            if cmd_line.to_lowercase() == "prior incantato" { 
                 self.print_history();
                 continue;
             }
