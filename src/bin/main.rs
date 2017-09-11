@@ -74,20 +74,19 @@ impl <'a>Shell<'a> {
             stdout.flush().unwrap();
 
             let mut line = String::new();
-
             stdin.read_line(&mut line).unwrap(); 
-
             let cmd_line = line.trim();
-
+            self.history.write(String::from(cmd_line));
+            
             if cmd_line.to_lowercase() == "mischief managed" { return; }
+            if cmd_line.to_lowercase() == "priori incantato" { 
+                self.print_history();
+                continue;
+            }
 
             let program = cmd_line.splitn(1, ' ').nth(0).expect("no program");
-
-            self.history.write(String::from(cmd_line));
-
             match program {
                 ""      =>  { continue; }
-                "history" => { self.print_history(); }
                 _       =>  { self.run_cmdline(cmd_line); }
             }
         }
