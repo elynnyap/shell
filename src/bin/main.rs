@@ -5,14 +5,17 @@
 
 extern crate shell;
 extern crate nix;
+extern crate rand;
 
 use nix::libc::c_int;
 use nix::sys::signal::{kill, Signal, SigHandler};
 use nix::sys::signal;
 use nix::sys::wait::waitpid;
 use nix::unistd::{fork, ForkResult, execvp, Pid, setpgid, dup2, close};
+use rand::Rng;
 use shell::args_parser;
 use shell::circular_buffer::CircularBuffer;
+use shell::magic;
 use std::env;
 use std::ffi::CString;
 use std::fs::File;
@@ -29,7 +32,8 @@ const STDOUT_FILENO: RawFd = 1;
 
 struct Shell<'a> {
     cmd_prompt: &'a str, 
-    history: CircularBuffer<String> 
+    history: CircularBuffer<String>,
+    error_msgs: Vec<&'static str>
 }
 
 #[allow(unused_must_use)]
@@ -37,7 +41,8 @@ impl <'a>Shell<'a> {
     fn new(prompt_str: &'a str) -> Shell<'a> {
         Shell { 
             cmd_prompt: prompt_str, 
-            history: CircularBuffer::new(HISTORY_SIZE)
+            history: CircularBuffer::new(HISTORY_SIZE),
+            error_msgs: magic::get_error_msgs()
         }
     }
 
@@ -173,7 +178,8 @@ impl <'a>Shell<'a> {
                 }
             }
         } else {
-            println!("{}: command not found", program);
+            println!("{}: spell failed!", program);
+            println!("{}", rand::thread_rng().choose(&self.error_msgs).unwrap());
         }
     }
 
