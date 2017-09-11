@@ -12,8 +12,10 @@ To unlock the shell, first tap it with your wand [and recite the magic words](ht
 
 In case you failed your OWLs:
 
-For Wizards | For Muggles
+Wizard-speak | Muggle-speak
 --- | ---
+[apparate](http://harrypotter.wikia.com/wiki/Apparition) | cd
+[evanesco](http://harrypotter.wikia.com/wiki/Evanesco) | &
 [lumos](http://harrypotter.wikia.com/wiki/Wand-Lighting_Charm) | ls
 [prior incantato](http://harrypotter.wikia.com/wiki/Reverse_Spell) | history 
 

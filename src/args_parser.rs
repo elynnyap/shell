@@ -1,7 +1,7 @@
 //Checks if process should be executed in the background and returns the (un)modified cmd + boolean as result
 pub fn check_background_process<'a>(argv: &'a [&str]) -> (&'a [&'a str], bool) {
     let last_index = argv.len() - 1;
-    if argv.len() > 0 && argv[last_index] == "&" {
+    if argv.len() > 0 && argv[last_index].to_lowercase() == "evanesco" {
         (&argv[0..last_index], true)
     } else {
         (argv, false)

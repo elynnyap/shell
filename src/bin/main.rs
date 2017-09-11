@@ -109,7 +109,7 @@ impl <'a>Shell<'a> {
             None => (),
             Some(&program) => {
                 match program {
-                    "cd" => {
+                    "apparate" => {
                         if argv.len() == 1 {
                             println!("No directory specified.");
                         } else {
@@ -127,10 +127,10 @@ impl <'a>Shell<'a> {
         let path = Path::new(new_dir);
         if path.exists() {
             if env::set_current_dir(&path).is_err() {
-                println!("Unable to change directory");
+                println!("Unable to apparate. Are you sure you got your licence?");
             }
         } else {
-            println!("Path does not exist");
+            println!("Destination does not exist. You just got splinched.");
         }
     }
 
