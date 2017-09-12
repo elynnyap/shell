@@ -3,8 +3,8 @@ swish
 
 A shell for wizards, witches, and other magical beings.
 
-[[https://github.com/elynnyap/swish/blob/master/screenshot1.png]]
-[[https://github.com/elynnyap/swish/blob/master/screenshot2.png]]
+![swish1](https://github.com/elynnyap/swish/blob/master/screenshot1.png)
+![swish2](https://github.com/elynnyap/swish/blob/master/screenshot2.png)
 
 ## Use
 ```cargo build && /target/debug/main```
