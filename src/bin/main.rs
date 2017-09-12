@@ -89,6 +89,10 @@ impl <'a>Shell<'a> {
                 self.print_history();
                 continue;
             }
+            if cmd_line.to_lowercase() == "expecto patronum" {
+               magic::print_expecto();
+               continue;
+            }
 
             let program = cmd_line.splitn(1, ' ').nth(0).expect("no program");
             match program {
