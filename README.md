@@ -21,7 +21,7 @@ Spell | Muggle Translation
 [alohomora](http://harrypotter.wikia.com/wiki/Unlocking_Charm) | open
 [aparecium](http://harrypotter.wikia.com/wiki/Revealing_Charm) | cat
 [apparate](http://harrypotter.wikia.com/wiki/Apparition) | cd
-[avada kedavra](http://harrypotter.wikia.com/wiki/Killing_Curse) | kill
+[avada](http://harrypotter.wikia.com/wiki/Killing_Curse) | kill
 [confundo](http://harrypotter.wikia.com/wiki/Confundus_Charm) | rev
 [crucio](http://harrypotter.wikia.com/wiki/Cruciatus_Curse) | yes
 [depulso](http://harrypotter.wikia.com/wiki/Banishing_Charm) | ping

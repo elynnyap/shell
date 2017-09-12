@@ -3,7 +3,7 @@ pub fn get_spell(spell: &str) -> Option<&str> {
         "accio" => Some("wget"),
         "alohomora" => Some("open"),
         "aparecium" => Some("cat"),
-        "avada kedavra" => Some("kill"),
+        "avada" => Some("kill"),
         "confundo" => Some("rev"),
         "crucio" => Some("yes"),
         "depulso" => Some("ping"),
