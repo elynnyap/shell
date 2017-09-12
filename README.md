@@ -3,10 +3,13 @@ swish
 
 A shell for wizards, witches, and other magical beings.
 
+[[https://github.com/elynnyap/swish/blob/master/screenshot1.png]]
+[[https://github.com/elynnyap/swish/blob/master/screenshot2.png]]
+
 ## Use
 ```cargo build && /target/debug/main```
 
-To unlock the shell, first tap it with your wand [and recite the magic words](http://harrypotter.wikia.com/wiki/Marauder%27s_Map). To exit, do the same.
+To unlock the shell, first tap it with your wand [and recite the magic words](http://harrypotter.wikia.com/wiki/Marauder%27s_Map). 
 
 ## Glossary
 
