@@ -15,6 +15,7 @@ use nix::unistd::{fork, ForkResult, execvp, Pid, setpgid, dup2, close};
 use rand::Rng;
 use shell::args_parser;
 use shell::circular_buffer::CircularBuffer;
+use shell::spells::get_spell;
 use shell::magic;
 use std::env;
 use std::ffi::CString;
@@ -140,47 +141,40 @@ impl <'a>Shell<'a> {
     }
 
     fn run_cmd(&self, program: &str, argv: &[&str]) {
-        let (argv, is_bg_process) = args_parser::check_background_process(argv);
+        let spell = get_spell(program);
 
-        if self.cmd_exists(program) {
-            if is_bg_process {
-                match fork() {
-                    Ok(ForkResult::Parent { .. }) => {}, // Parent does not wait for bg process
-                    Ok(ForkResult::Child) => {
-                        setpgid(Pid::from_raw(0), Pid::from_raw(0)); // Put the child into a different process group
-                        self.run_cmd_child(program, argv);
-                    },
-                    Err(_) => {
-                        println!("Fork failed");
+        match spell {
+            Some(p) => {
+                if !self.cmd_exists(p) { return; };
+                let (argv, is_bg_process) = args_parser::check_background_process(argv);
+                if is_bg_process {
+                    match fork() {
+                        Ok(ForkResult::Parent { .. }) => {}, // Parent does not wait for bg process
+                        Ok(ForkResult::Child) => {
+                            setpgid(Pid::from_raw(0), Pid::from_raw(0)); // Put the child into a different process group
+                            self.run_cmd_child(p, argv);
+                        },
+                        Err(_) => { println!("Fork failed"); }
+                    }
+                } else {
+                    match fork() {
+                        Ok(ForkResult::Parent { child, .. }) => {
+                            // Record child process as the currently-running foreground process
+                            unsafe { FG_PID = Some(child); }
+                            waitpid(child, None);
+                            // child process has completed, so clear FG_PID
+                            unsafe { FG_PID = None;
+                            } },
+                        Ok(ForkResult::Child) => { self.run_cmd_child(p, argv); },
+                        Err(_) => { println!("Fork failed"); }
                     }
                 }
-
-            } else {
-                match fork() {
-                    Ok(ForkResult::Parent { child, .. }) => {
-                        // Record child process as the currently-running foreground process
-                        unsafe {
-                            FG_PID = Some(child);
-                        }
-                        waitpid(child, None);
-
-                        // child process has completed, so clear FG_PID
-                        unsafe {
-                            FG_PID = None;
-                        }
-                    },
-                    Ok(ForkResult::Child) => {
-                        self.run_cmd_child(program, argv);
-                    },
-                    Err(_) => {
-                        println!("Fork failed");
-                    }
-                }
+            },
+            None => {
+                println!("{}: spell failed!", program);
+                println!("{}", rand::thread_rng().choose(&self.error_msgs).unwrap());
             }
-        } else {
-            println!("{}: spell failed!", program);
-            println!("{}", rand::thread_rng().choose(&self.error_msgs).unwrap());
-        }
+        } 
     }
 
     fn run_cmd_child(&self, program: &str, argv: &[&str]) {

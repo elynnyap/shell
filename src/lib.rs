@@ -5,3 +5,4 @@
 pub mod circular_buffer;
 pub mod args_parser;
 pub mod magic;
+pub mod spells;

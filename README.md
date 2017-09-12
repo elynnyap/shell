@@ -14,10 +14,24 @@ In case you failed your OWLs:
 
 Wizard-speak | Muggle-speak
 --- | ---
+[accio](http://harrypotter.wikia.com/wiki/Summoning_Charm) | wget
+[alohomora](http://harrypotter.wikia.com/wiki/Unlocking_Charm) | open
+[aparecium](http://harrypotter.wikia.com/wiki/Revealing_Charm) | cat
 [apparate](http://harrypotter.wikia.com/wiki/Apparition) | cd
+[avada kedavra](http://harrypotter.wikia.com/wiki/Killing_Curse) | kill
+[confundo](http://harrypotter.wikia.com/wiki/Confundus_Charm) | rev
+[crucio](http://harrypotter.wikia.com/wiki/Cruciatus_Curse) | yes
 [evanesco](http://harrypotter.wikia.com/wiki/Evanesco) | &
+[gemino](http://harrypotter.wikia.com/wiki/Gemino_Curse) | cp
+[imperio](http://harrypotter.wikia.com/wiki/Imperius_Curse) | sudo
+[legilimens](http://harrypotter.wikia.com/wiki/Legilimency) | less
+[locomotor](http://harrypotter.wikia.com/wiki/Locomotion_Charm) | mv
 [lumos](http://harrypotter.wikia.com/wiki/Wand-Lighting_Charm) | ls
+[obliviate](http://harrypotter.wikia.com/wiki/Memory_Charm) | rm
+[portus](http://harrypotter.wikia.com/wiki/Portus) | ln
 [prior incantato](http://harrypotter.wikia.com/wiki/Reverse_Spell) | history 
+[reducio](http://harrypotter.wikia.com/wiki/Shrinking_Charm) | tar
+[scourgify](http://harrypotter.wikia.com/wiki/Scouring_Charm) | rmdir
 
 ## Notes
 If run with ```cargo run```, signal handling (ctrl+c) will not work (see [here](https://github.com/Detegr/rust-ctrlc/issues/15) and [here](https://www.reddit.com/r/rust/comments/6lsead/problems_with_ctrlc_handling_under_rust_in_windows/) for explanation). 
